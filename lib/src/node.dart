@@ -80,7 +80,7 @@ abstract class Node
     
     if (_obsoleteAtTopic!=null && _obsoleteAtTopic!<=appearesAtTopic)
     {
-      throw FormatException('Попытка задать время введения термина или высказываняи после времени потери актуальности.');
+      throw FormatException('Попытка задать время введения термина или высказываняи после времени потери актуальности. (1)');
     }
     else
     {
@@ -90,13 +90,13 @@ abstract class Node
 
   set obsoleteAtTopic(int? obsoleteAtTopic)
   {
-    if (obsoleteAtTopic!=null && _appearesAtTopic<obsoleteAtTopic)
+    if (obsoleteAtTopic!=null && _appearesAtTopic>=obsoleteAtTopic)
     {
-      throw FormatException('Попытка задать время введения термина или высказываняи после времени потери актуальности.');
+      throw FormatException('Попытка задать время введения термина или высказываняи после времени потери актуальности. (2)');
     }
     else
     {
-      _obsoleteAtTopic=_obsoleteAtTopic;
+      _obsoleteAtTopic=obsoleteAtTopic;
     }
   }
 

@@ -589,6 +589,26 @@ class Graph
     return retval;
   }
 
+  bool intervalApplicable
+  (
+    int start, 
+    int? end
+  )
+  {
+    List<int?> tmplist = minMaxPredicateTopics;
+    int min = tmplist[0]!;
+    int? max = tmplist[1];
+    return 
+    (
+      start>=min &&
+      (max==null || start<max) &&
+      (
+        end==null || end>=start &&
+        (max==null || end<max)
+      )
+    );
+  }
+
   @override
   String toString()
   {
@@ -616,6 +636,30 @@ class Graph
     retval+=predicatesTypesSummary;
     retval+="variables (${_variableNodes.length} in total):\n";
     retval+=variablesTypesSummary;
+    return retval;
+  }
+
+  List<int?> get minMaxPredicateTopics 
+  {
+    List<int?> retval = <int?>[1,0]; 
+    for (PredicateNode predicateNode in predicateNodes)
+    {
+      if (predicateNode.appearesAtTopic<retval[0]!)
+      {
+        retval[0]!=predicateNode.appearesAtTopic;
+      }
+      if (retval[1]!=null)
+      {
+        if (predicateNode.obsoleteAtTopic==null) {retval[1]=null;}
+        else if (predicateNode.obsoleteAtTopic!=null)
+        {
+          if (predicateNode.obsoleteAtTopic!>retval[1]!)
+          {
+            retval[1]=predicateNode.obsoleteAtTopic;
+          }
+        }
+      }
+    }
     return retval;
   }
 

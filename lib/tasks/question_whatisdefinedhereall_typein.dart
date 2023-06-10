@@ -148,13 +148,18 @@ Question_WhatIsDefinedHereAll_TypeIn questionDefinitionAllRandom
   Graph graph,
   StreamController<int> errorsFoundSink,
   {
-    int? topic,
+    /// Choose predicates from the topic number (inclusive).
+    /// By default, if [toTopic] is passed, considered to be 0
+    int? fromTopic,
+    /// Choose predicates to the topic number (inclusive!!!).
+    /// By default, if [fromTopic] is passed, considered to be infinite.
+    int? toTopic,
     int? attempts
   }
 )
 {
   List<DefinitionNode> shuffledPredicates = 
-    <DefinitionNode>[] + graph.allNodesTyped<DefinitionNode>();
+    <DefinitionNode>[] + extractForTopicTyped(graph, fromTopic, toTopic);
   shuffledPredicates.shuffle();
   DefinitionNode definitionNode = shuffledPredicates[0];
   Question_WhatIsDefinedHereAll_TypeIn question = 

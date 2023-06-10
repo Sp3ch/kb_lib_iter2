@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:kb_lib_iter2/src/new_predicate_relationships.dart';
+
+import '../src/new_graph.dart';
 
 ///A SUPER class with all the data processing neded for the question
 abstract class Task<TBODY, TRANSW, TPANSW, TGANSW> 
@@ -138,3 +141,76 @@ abstract class Task<TBODY, TRANSW, TPANSW, TGANSW>
   List<TGANSW> get givenAnswers => <TGANSW>[]+_givenAnswers;
   TGANSW get lastGivenAnswer => _givenAnswers.last;
 }
+
+/// Extract all the nodes of a specific types from [Graph]'s predicates.
+/// The type T specifies the type given.
+/// Both [fromTopic] and [toTopic] consider the topics inclusively.
+/// The [Node] is returned if at least one topic of it's meaningfull existance 
+/// is within the set interal (i.e. if intervals collide, not only if the 
+/// [Node]'s interval is included in the needed interval).
+List<T> extractForTopicTyped<T extends PredicateNode>
+(
+  Graph graph,
+  int? fromTopic,
+  int? toTopic
+)
+{
+  List<T> retval = <T>[];
+  List<T> tmplist = <T>[] + graph.allNodesTyped<T>(); 
+  if (fromTopic!=null && toTopic!=null && fromTopic>toTopic)
+  {
+    throw FormatException('Попытка запросить вопрос с пустым диапазоном тем изучения.');
+  }
+  if (fromTopic!=null && fromTopic<0)
+  {
+    throw FormatException('В поданном диапазоне тем изучения номер темы начала меньше 0.');
+  }
+  if (toTopic!=null && toTopic<1)
+  {
+    throw FormatException('В поданом диапазоне тем изучения номер темы выхода из актуальности меньше 1 (знание не может потерять смысл в ту же тему, в которую введено, а введено может быть только начиная с темы 0).');
+  }
+  if (!graph.intervalApplicable((fromTopic ?? 0), toTopic))
+  {
+    throw FormatException('Неправильный (пустой) интервал тем.');
+  }
+  if (fromTopic!=null)
+  {
+    for (T predicateNode in tmplist)
+    {
+      if 
+        (
+          (
+            predicateNode.obsoleteAtTopic==null || 
+            predicateNode.obsoleteAtTopic!>fromTopic
+          )
+          &&
+          (
+            toTopic==null ||
+            predicateNode.appearesAtTopic <= toTopic
+          )
+        )
+        {retval.add(predicateNode);}
+    }
+  }
+  else if (toTopic!=null)
+  {
+    for (T predicateNode in tmplist)
+    {
+      if 
+      (
+        (
+          predicateNode.obsoleteAtTopic==null || 
+          predicateNode.obsoleteAtTopic! > (fromTopic ?? 0)
+        )
+        &&
+        predicateNode.appearesAtTopic <= toTopic
+      )
+      {retval.add(predicateNode);}
+    }
+  }
+  else
+  {
+    retval = tmplist;
+  }
+  return retval;
+} 

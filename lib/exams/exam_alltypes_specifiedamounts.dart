@@ -2,8 +2,10 @@ import 'package:kb_lib_iter2/kb_lib_iter2.dart';
 
 class Exam_AllTypes_SpecifiedAmounts extends Exam
 {
-  Map<Type,int> _typesAmounts={};
+  Map<Type,int> _typesAmounts = {};
 
+  final int? _fromTopic;
+  final int? _toTopic;
 
   Exam_AllTypes_SpecifiedAmounts
   (
@@ -13,9 +15,27 @@ class Exam_AllTypes_SpecifiedAmounts extends Exam
     int? attempts,
     int? question_WhatIsDefinedHereAll_TypeIn,
     int? question_WhatIsDefinedHereOneRandom_TypeIn,
+    int? fromTopic,
+    int? toTopic
     }
-  )
+  ) : _toTopic = toTopic, _fromTopic = fromTopic
   {
+    if (_fromTopic!=null && _toTopic!=null && _fromTopic!>_toTopic!)
+    {
+      throw FormatException('Попытка создать проверочную работу с пустым диапазоном тем изучения.');
+    }
+    if (_fromTopic!=null && _fromTopic!<0)
+    {
+      throw FormatException('В поданном диапазоне тем изучения номер темы начала меньше 0 (при создании проверочной работы).');
+    }
+    if (_toTopic!=null && _toTopic!<1)
+    {
+      throw FormatException('В поданом диапазоне тем изучения номер темы выхода из актуальности меньше 1 (знание не может потерять смысл в ту же тему, в которую введено, а введено может быть только начиная с темы 0) (при создании проверочной работы).');
+    }
+    if (!graph.intervalApplicable(_fromTopic!, toTopic))
+    {
+      throw FormatException('Неправильный (пустой) интервал тем.');
+    }
     type="Exam_AllTypes_SpecifiedAmounts";
     super.graph=graph;
     if 
@@ -83,7 +103,13 @@ class Exam_AllTypes_SpecifiedAmounts extends Exam
           {
             _typesAmounts[Question_WhatIsDefinedHereAll_TypeIn]
               =_typesAmounts[Question_WhatIsDefinedHereAll_TypeIn]! -1;
-            Task tmptask = questionDefinitionAllRandom(graph, super.errorsSK);
+            Task tmptask = questionDefinitionAllRandom
+            (
+              graph, 
+              super.errorsSK,
+              fromTopic: _fromTopic,
+              toTopic: _toTopic
+            );
             nextTaskSink.add(tmptask);
             return tmptask;
           }
@@ -91,7 +117,13 @@ class Exam_AllTypes_SpecifiedAmounts extends Exam
           {
             _typesAmounts[Question_WhatIsDefinedHereOneRandom_TypeIn]
               =_typesAmounts[Question_WhatIsDefinedHereOneRandom_TypeIn]! -1;
-              Task tmptask = questionDefinitionOneRandomRandom(graph, super.errorsSK);
+              Task tmptask = questionDefinitionOneRandomRandom
+              (
+                graph, 
+                super.errorsSK,
+                fromTopic: _fromTopic,
+                toTopic: _toTopic
+              );
               nextTaskSink.add(tmptask);
             return tmptask;
           }
