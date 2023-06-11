@@ -352,7 +352,7 @@ class Graph
           (
             predicatePhrase,
             predicateIdentifier,
-            fromVariables: predicateDependsOnVariables,
+            fromVariableNodes: predicateDependsOnVariableNodes,
             fromRepresentationMasks: predicateDependsOnMasks,
             appearesAtTopic: predicateStart,
             obsoleteAtTopic: predicateEnd
@@ -560,9 +560,9 @@ class Graph
           (
             predicatePhrase,
             predicateIdentifier,
-            predicateAffectsVariables,
+            predicateAffectsVariableNodes,
             predicateAffectsMasks,
-            fromVariables: predicateDependsOnVariables,
+            fromVariableNodes: predicateDependsOnVariableNodes,
             fromRepresentationMasks: predicateDependsOnMasks,
             appearesAtTopic: predicateStart,
             obsoleteAtTopic: predicateEnd

@@ -13,7 +13,7 @@ class FactNode extends PredicateNode
     String phrase,
     String? identifier,
     {
-      List<Variable?>? fromVariables,
+      List<VariableNode?>? fromVariableNodes,
       List< Mask? >? fromRepresentationMasks,
       int? appearesAtTopic, 
       int? obsoleteAtTopic,
@@ -21,6 +21,22 @@ class FactNode extends PredicateNode
   )
   {
     super.topics=<int?>[appearesAtTopic,obsoleteAtTopic];
+    List<Variable?>? fromVariables = <Variable?>[];
+    if (fromVariableNodes!=null)
+    {
+      for (VariableNode? fromNode in fromVariableNodes)
+      {
+        if (fromNode!=null) 
+        {
+          if (!inConstructorTopicsCheck(fromNode))
+          {
+            throw FormatException('Попытка создать Определение, для которого одно из используемых или определяемых понятий утрачивает силу или вводится поздно во время рассмотрения определения (\"${fromNode.variable.identifier}\" для \"$phrase\").');
+          }
+          fromVariables.add(fromNode.variable);
+        }
+      }
+    }
+    else {fromVariables = null;}
     super.predicate=Fact
     (
       phrase,
@@ -76,18 +92,31 @@ class FactNode extends PredicateNode
     List<ThingInPredicate>? things = super.predicate.things;
     if (things!=null && things.isNotEmpty)
     {
-      List<Variable?> variables=<Variable?>[];
+      List<VariableNode?> variableNodes=<VariableNode?>[];
       List<Mask?> masks=<Mask?>[];
       for (ThingInPredicate thing in things)
       {
-        variables.add(thing.thing);
-        masks.add(thing.mask);
+        if (thing.thing!=null)
+        {
+          List<Edge>? searchval = findAllEdgesByVariable(thing.thing!);
+          if (searchval!=null && searchval.isNotEmpty)
+          {
+            for (Edge edge in searchval)
+            {
+              if ((edge.node as VariableNode).variable==thing.thing)
+              {
+                variableNodes.add(edge.node as VariableNode);
+                masks.add(thing.mask);
+              }
+            }
+          }
+        }
       }
       return FactNode
       (
         super.predicate.phrase,
         super.predicate.identifier,
-        fromVariables: variables,
+        fromVariableNodes: variableNodes,
         fromRepresentationMasks: masks,
         appearesAtTopic: super.appearesAtTopic,
         obsoleteAtTopic: super.obsoleteAtTopic

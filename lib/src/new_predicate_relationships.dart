@@ -7,7 +7,7 @@ import './node.dart';
 abstract class PredicateNode extends Node 
 {
   late Predicate _predicate;
-  bool _created = false;
+  bool _createdPredicate = false;
 
   List<Edge>? findAllEdgesByVariable(Variable variable)
   {
@@ -26,13 +26,20 @@ abstract class PredicateNode extends Node
     }
     else{return null;}
   }
+
+  /// The function to use in all the [PredicateNode] descendants' constructors
+  bool inConstructorTopicsCheck(Node node)
+    =>
+    node.appearesAtTopic<=appearesAtTopic && 
+    node.obsoleteAtTopic==null ||
+    obsoleteAtTopic!=null && node.obsoleteAtTopic!>=obsoleteAtTopic!;
   
   set predicate(Predicate predicate)
   {
-    if (!_created)
+    if (!_createdPredicate)
     {
       _predicate=predicate;
-      _created=true;
+      _createdPredicate=true;
     }
   }
 

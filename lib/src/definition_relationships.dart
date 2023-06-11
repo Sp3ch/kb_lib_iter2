@@ -12,10 +12,10 @@ class DefinitionNode extends PredicateNode
   (
     String phrase,
     String? identifier,
-    List<Variable> toVariables,
+    List<VariableNode> toVariableNodes,
     List<Mask> toMasks,
     {
-      List<Variable?>? fromVariables,
+      List<VariableNode?>? fromVariableNodes,
       List< Mask? >? fromRepresentationMasks,
       int? appearesAtTopic, 
       int? obsoleteAtTopic,
@@ -23,6 +23,32 @@ class DefinitionNode extends PredicateNode
   )
   {
     super.topics=<int?>[appearesAtTopic,obsoleteAtTopic];
+    List<Variable> toVariables = <Variable>[];
+    List<Variable?>? fromVariables = <Variable>[];
+    if (fromVariableNodes!=null)
+    {
+      for (VariableNode? fromNode in fromVariableNodes)
+      {
+        if (fromNode!=null) 
+        {
+          if (!inConstructorTopicsCheck(fromNode))
+          {
+            throw FormatException('Попытка создать Определение, для которого одно из используемых или определяемых понятий утрачивает силу или вводится поздно во время рассмотрения определения (\"${fromNode.variable.identifier}\" для \"$phrase\").');
+          }
+          fromVariables.add(fromNode.variable);
+        }
+        else {fromVariables.add(null);}
+      }
+    }
+    else {fromVariables=null;}
+    for (VariableNode toNode in toVariableNodes)
+    {
+      if (!inConstructorTopicsCheck(toNode))
+      {
+        throw FormatException('Попытка создать Определение, для которого одно из используемых или определяемых понятий утрачивает силу или вводится поздно во время рассмотрения определения (\"${toNode.variable.identifier}\" для \"$phrase\").');
+      }
+      toVariables.add(toNode.variable);
+    }
     super.predicate=Definition
     (
       phrase,
@@ -103,10 +129,10 @@ class DefinitionNode extends PredicateNode
   @override
   PredicateNode get copyWithNoEdges
   {
+    List<VariableNode> toVariableNodes = <VariableNode>[];
+    List<VariableNode?>? fromVariableNodes;
     List<ThingInPredicate>? things = super.predicate.things;
-    List<Variable> toVariables=<Variable>[];
     List<Mask> toMasks=<Mask>[];
-    List<Variable?> fromVariables=<Variable?>[];
     List<Mask?> fromMasks=<Mask?>[];
     List<Edge>? tmpedges;
     if (things!=null && things.isNotEmpty)
@@ -120,11 +146,19 @@ class DefinitionNode extends PredicateNode
           {
             for (Edge edge in tmpedges)
             {
-              if (edge.direction==Direction.outwards)
+              if ((edge.node as VariableNode).variable==thing.thing)
               {
-                toVariables.add(thing.thing!);
-                toMasks.add(thing.mask);
-                break;
+                if (edge.direction==Direction.outwards)
+                {
+                  toVariableNodes.add(edge.node as VariableNode);
+                  toMasks.add(thing.mask);
+                  break;
+                }
+                else if (edge.direction==Direction.inwards)
+                {
+                  fromVariableNodes ??= <VariableNode?>[];
+                  fromVariableNodes.add(edge.node as VariableNode);
+                }
               }
             }
           }
@@ -134,9 +168,9 @@ class DefinitionNode extends PredicateNode
       (
         super.predicate.phrase,
         super.predicate.identifier,
-        toVariables,
+        toVariableNodes,
         toMasks,
-        fromVariables: fromVariables,
+        fromVariableNodes: fromVariableNodes,
         fromRepresentationMasks: fromMasks,
         appearesAtTopic: super.appearesAtTopic,
         obsoleteAtTopic: super.obsoleteAtTopic
